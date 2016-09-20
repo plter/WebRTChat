@@ -9,18 +9,20 @@ window.plter = window.plter || {};
     class MessageBox {
 
         static show(text, title = "提示") {
-            MessageBox._jq.dialog("option", "title", title);
-            MessageBox._jq.html(text);
-            MessageBox._jq.dialog("open");
+            MessageBox._dialog.open();
+            let dialogJq = MessageBox._dialog.jq;
+
+            dialogJq.dialog("option", "title", title);
+            dialogJq.html(text);
+            dialogJq.dialog("open");
         }
 
         static hide() {
-            MessageBox._jq.dialog("close");
+            MessageBox._dialog.close();
         }
     }
 
-    MessageBox._jq = $("#message-box");
-
+    MessageBox._dialog = new plter.Dialog();
 
     plter.MessageBox = MessageBox;
 })();

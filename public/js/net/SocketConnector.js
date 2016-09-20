@@ -27,7 +27,8 @@ window.plter = window.plter || {};
 
                 if (data.success) {
                     plter.MessageBox.hide();
-                    //TODO show video chat view
+
+                    plter.CommandAdapter.getInstance().trigger(plter.Commands.SHOW_CHAT_VIEW);
                 } else {
                     plter.MessageBox.show("ID已存在，请换一个");
                     setTimeout(()=> {
