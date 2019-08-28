@@ -1,0 +1,19 @@
+.close-btn-area {
+    position: absolute;
+    width: 100%;
+    height: 50px;
+    background-color: rgba(0, 0, 0, 0);
+    top: 0
+}
+
+.close-btn-area:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+.close-btn-area .btn-close {
+    display: none;
+}
+
+.close-btn-area:hover .btn-close {
+    display: block;
+}

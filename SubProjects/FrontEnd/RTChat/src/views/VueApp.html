@@ -1,0 +1,25 @@
+<div class="card" style="width: 800px;height: 500px;">
+    <div class="card-header">WebRTChat</div>
+    <div style="display: flex;flex-direction: row;height: 100%;">
+        <div style="display: flex;flex-direction: column;height: 100%;border-right: solid #ccc thin;">
+            <div style="font-weight: bold;text-align: center;">在线列表</div>
+            <div class="list-group" style="flex: 1;width: 100%;overflow-y: auto;overflow-x: hidden;font-size: 10pt;">
+                <button v-for="c in clients" v-html="(!isMyself(c))?c:c+' [Self]'" :data-socketid="c"
+                        @click="socketidClickedHandler"
+                        class="list-group-item list-group-item-action">
+                </button>
+            </div>
+            <video ref="localPreview" width="240" height="180" autoplay muted></video>
+        </div>
+        <div style="flex: 1;height: 100%;position: relative;">
+            <video ref="remotePreview" style="width: 100%;height: 100%;" autoplay></video>
+            <div class="close-btn-area" v-if="remoteSocketID">
+                <span v-html="remoteSocketID"></span>
+                <button class="btn btn-danger btn-sm btn-close"
+                        style="position: absolute;right: 10px;top: 10px;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

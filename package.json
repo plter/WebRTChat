@@ -1,0 +1,24 @@
+{
+  "name": "webrtchat",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www"
+  },
+  "dependencies": {
+    "cookie-parser": "~1.4.4",
+    "debug": "~2.6.9",
+    "express": "~4.16.1",
+    "http-errors": "~1.6.3",
+    "morgan": "~1.9.1",
+    "socket.io": "^2.2.0",
+    "twig": "~0.10.3",
+    "webpack-stream": "^5.2.1"
+  },
+  "devDependencies": {
+    "css-loader": "^3.2.0",
+    "gulp": "^4.0.2",
+    "html-loader": "^0.5.5",
+    "style-loader": "^1.0.0"
+  }
+}
