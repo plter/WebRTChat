@@ -14,6 +14,7 @@ import SendOfferICECandidateHandler from "../commands/SendOfferICECandidateHandl
 import ReceivedOfferICECandidateHandler from "../commands/ReceivedOfferICECandidateHandler";
 import SendAnswerICECandidateHandler from "../commands/SendAnswerICECandidateHandler";
 import ReceivedAnswerICECandidateHandler from "../commands/ReceivedAnswerICECandidateHandler";
+import Events from "../globals/Events";
 
 const VueApp = Vue.component("vue-app", {
     template: VueAppTpl,
@@ -27,6 +28,7 @@ const VueApp = Vue.component("vue-app", {
 
     created() {
         window.appContext = new EventAdapter();
+        appContext.on(Events.DATA_CHANGED, this._appContext_dataChanged.bind(this));
         appContext.data(GlobalKeys.KEY_VUE_APP, this);
     },
 
@@ -73,33 +75,53 @@ const VueApp = Vue.component("vue-app", {
         },
 
         _gotRemoteTrackHandler(track) {
-            if (!this._remoteStream) {
-                this._remoteStream = new MediaStream();
-                this.$refs.remotePreview.srcObject = this._remoteStream;
-                appContext.data(GlobalKeys.KEY_REMOTE_STREAM, this._remoteStream);
+            let remoteStream = appContext.data(GlobalKeys.KEY_REMOTE_STREAM);
+            if (remoteStream) {
+                remoteStream.addTrack(track);
             }
-
-            this._remoteStream.addTrack(track);
         },
 
         socketidClickedHandler(e) {
+            if (this.remoteSocketID) {
+                alert("You can not start more than one session at the same time.");
+                return;
+            }
+
             let targetId = $(e.target).data("socketid");
-            if (!this.isMyself(targetId)) {
-                if (confirm(`Don you want to chat with ${targetId}?`)) {
-                    appContext.fire(GlobalEvents.START_CHAT_SESSION, targetId);
-                }
-            } else {
+            if (this.isMyself(targetId)) {
                 alert("You can not chat with yourself.");
+                return;
+            }
+
+            if (confirm(`Don you want to chat with ${targetId}?`)) {
+                appContext.fire(GlobalEvents.START_CHAT_SESSION, targetId);
             }
         },
 
-    },
+        _appContext_dataChanged(key, val, oldVal) {
+            switch (key) {
+                case GlobalKeys.KEY_CURRENT_REMOTE_SOCKET_ID:
+                    this.remoteSocketID = val;
+                    break;
+                case GlobalKeys.KEY_CURRENT_ANSWER_RTC_CONNECTION:
+                case GlobalKeys.KEY_CURRENT_OFFER_RTC_CONNECTION:
+                    if (oldVal) {
+                        oldVal.close();
+                    }
+                    break;
+                case GlobalKeys.KEY_REMOTE_STREAM:
+                    this.$refs.remotePreview.srcObject = val;
+                    break;
+            }
+        },
 
-    watch: {
-        remoteSocketID(val, oldVal) {
-            windowJq.data(GlobalKeys.KEY_CURRENT_REMOTE_SOCKET_ID, val);
+        btnCloseCurrentSessionClicked(e) {
+            appContext.data(GlobalKeys.KEY_CURRENT_OFFER_RTC_CONNECTION, null);
+            appContext.data(GlobalKeys.KEY_CURRENT_ANSWER_RTC_CONNECTION, null);
+            appContext.data(GlobalKeys.KEY_CURRENT_REMOTE_SOCKET_ID, null);
         }
-    }
+
+    },
 });
 
 export default VueApp;

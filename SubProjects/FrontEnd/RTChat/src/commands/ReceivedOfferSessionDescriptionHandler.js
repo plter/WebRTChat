@@ -9,6 +9,7 @@ async function ReceivedOfferSessionDescriptionHandler(offer, callerSocketId) {
 
     let answerPc = new RTCPeerConnection(Constants.RTC_CONFIGURATION);
     appContext.data(GlobalKeys.KEY_CURRENT_ANSWER_RTC_CONNECTION, answerPc);
+    appContext.data(GlobalKeys.KEY_REMOTE_STREAM, new MediaStream());
 
     answerPc.ontrack = ev => {
         console.log("onTrack");

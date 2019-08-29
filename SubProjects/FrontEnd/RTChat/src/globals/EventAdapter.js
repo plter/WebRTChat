@@ -1,3 +1,5 @@
+import Events from "./Events";
+
 export default class EventAdapter {
     constructor() {
         this._listeners = new Map();
@@ -8,12 +10,10 @@ export default class EventAdapter {
         /**
          * @type {Set}
          */
-        let handlers = null;
-        if (!this._listeners.has(type)) {
+        let handlers = this._listeners.get(type);
+        if (!handlers) {
             handlers = new Set();
             this._listeners.set(type, handlers);
-        } else {
-            handlers = this._listeners.get(type);
         }
         handlers.add(handler);
     }
@@ -51,11 +51,19 @@ export default class EventAdapter {
     }
 
     data(...args) {
+        let key, value;
         switch (args.length) {
             case 1:
-                return this._data.get(args[0]);
+                key = args[0];
+                return this._data.get(key);
             case 2:
-                this._data.set(args[0], args[1]);
+                key = args[0];
+                value = args[1];
+                let oldVal = this._data.get(key);
+                if (oldVal !== value) {
+                    this._data.set(key, value);
+                    this.fire(Events.DATA_CHANGED, key, value, oldVal);
+                }
                 return this;
             default:
                 return this._data;

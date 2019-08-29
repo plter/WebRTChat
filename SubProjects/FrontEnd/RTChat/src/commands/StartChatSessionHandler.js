@@ -7,6 +7,7 @@ async function StartChatSessionHandler(targetSocketId) {
 
     let offerPc = new RTCPeerConnection(Constants.RTC_CONFIGURATION);
     appContext.data(GlobalKeys.KEY_CURRENT_OFFER_RTC_CONNECTION, offerPc);
+    appContext.data(GlobalKeys.KEY_REMOTE_STREAM, new MediaStream());
 
     offerPc.ontrack = ev => {
         console.log("onTrack", ev);

@@ -16,6 +16,7 @@
             <div class="close-btn-area" v-if="remoteSocketID">
                 <span v-html="remoteSocketID"></span>
                 <button class="btn btn-danger btn-sm btn-close"
+                        @click="btnCloseCurrentSessionClicked"
                         style="position: absolute;right: 10px;top: 10px;">
                     <i class="fas fa-times"></i>
                 </button>

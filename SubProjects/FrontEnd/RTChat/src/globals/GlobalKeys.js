@@ -1,5 +1,4 @@
 const GlobalKeys = {
-    KEY_SOCKET_CONNECTION: "socketConnection",
     KEY_SOCKET: "socket",
     KEY_CURRENT_LOCAL_SOCKET_ID: "currentLocalSocketID",
     KEY_CURRENT_REMOTE_SOCKET_ID: "currentRemoteSocketID",
