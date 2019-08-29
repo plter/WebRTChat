@@ -8,7 +8,8 @@ const GlobalKeys = {
     KEY_SOCKET_PROXY: "socketProxy",
     KEY_MEDIA_CONNECTION: "mediaConnection",
     KEY_VUE_APP: "vueapp",
-    KEY_LOCAL_STREAM: "localStream"
+    KEY_LOCAL_STREAM: "localStream",
+    KEY_REMOTE_STREAM: "remoteStream"
 };
 
 export default GlobalKeys;

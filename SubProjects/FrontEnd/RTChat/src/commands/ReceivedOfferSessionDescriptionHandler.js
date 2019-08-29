@@ -5,19 +5,30 @@ import GlobalEvents from "../globals/GlobalEvents";
 async function ReceivedOfferSessionDescriptionHandler(offer, callerSocketId) {
     console.log("Received offer");
     console.log(offer);
-    vueApp.setGlobalValue(GlobalKeys.KEY_CURRENT_REMOTE_SOCKET_ID, callerSocketId);
+    appContext.data(GlobalKeys.KEY_CURRENT_REMOTE_SOCKET_ID, callerSocketId);
 
     let answerPc = new RTCPeerConnection(Constants.RTC_CONFIGURATION);
-    vueApp.setGlobalValue(GlobalKeys.KEY_CURRENT_ANSWER_RTC_CONNECTION, answerPc);
+    appContext.data(GlobalKeys.KEY_CURRENT_ANSWER_RTC_CONNECTION, answerPc);
+
+    answerPc.ontrack = ev => {
+        console.log("onTrack");
+        appContext.fire(GlobalEvents.GOT_REMOTE_TRACK, ev.track);
+    };
+
+    answerPc.onicecandidate = ev => {
+        console.log(ev);
+        appContext.fire(GlobalEvents.SEND_ANSWER_ICE_CANDIDATE, ev.candidate, callerSocketId);
+    };
+
     await answerPc.setRemoteDescription(new RTCSessionDescription(offer));
 
-    let stream = vueApp.getGlobalValue(GlobalKeys.KEY_LOCAL_STREAM);
+    let stream = appContext.data(GlobalKeys.KEY_LOCAL_STREAM);
     stream.getTracks().forEach(t => answerPc.addTrack(t));
 
     let answer = await answerPc.createAnswer();
     await answerPc.setLocalDescription(new RTCSessionDescription(answer));
 
-    vueApp.$emit(GlobalEvents.SEND_ANSWER_SESSION_DESCRIPTION, answer, callerSocketId);
+    appContext.fire(GlobalEvents.SEND_ANSWER_SESSION_DESCRIPTION, answer, callerSocketId);
 }
 
 export default ReceivedOfferSessionDescriptionHandler;

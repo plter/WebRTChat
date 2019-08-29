@@ -9,6 +9,11 @@ import SendOfferSessionDescriptionHandler from "../commands/SendOfferSessionDesc
 import ReceivedOfferSessionDescriptionHandler from "../commands/ReceivedOfferSessionDescriptionHandler";
 import SendAnswerSessionDescriptionHandler from "../commands/SendAnswerSessionDescriptionHandler";
 import ReceivedAnswerSessionDescriptionHandler from "../commands/ReceivedAnswerSessionDescriptionHandler";
+import EventAdapter from "../globals/EventAdapter";
+import SendOfferICECandidateHandler from "../commands/SendOfferICECandidateHandler";
+import ReceivedOfferICECandidateHandler from "../commands/ReceivedOfferICECandidateHandler";
+import SendAnswerICECandidateHandler from "../commands/SendAnswerICECandidateHandler";
+import ReceivedAnswerICECandidateHandler from "../commands/ReceivedAnswerICECandidateHandler";
 
 const VueApp = Vue.component("vue-app", {
     template: VueAppTpl,
@@ -21,8 +26,8 @@ const VueApp = Vue.component("vue-app", {
     },
 
     created() {
-        window.vueApp = this;
-        this._globalValues = new Map();
+        window.appContext = new EventAdapter();
+        appContext.data(GlobalKeys.KEY_VUE_APP, this);
     },
 
     mounted() {
@@ -33,20 +38,29 @@ const VueApp = Vue.component("vue-app", {
     methods: {
         async _asyncInit() {
             this.registerGlobalEvents();
-            this.$emit(GlobalEvents.START_APP);
+
+            await appContext.fire(GlobalEvents.START_APP);
+            let stream = appContext.data(GlobalKeys.KEY_LOCAL_STREAM);
+            stream.getTracks().forEach(t => console.log(t));
+            this.$refs.localPreview.srcObject = stream;
         },
 
         registerGlobalEvents() {
-            vueApp.$on(GlobalEvents.LIST_CLIENTS, this.listClientsHandler.bind(this));
-            vueApp.$on(GlobalEvents.START_APP, StartAppHandler);
-            vueApp.$on(GlobalEvents.GET_LOCAL_MEDIA_STREAM, GetLocalMediaStreamHandler);
-            vueApp.$on(GlobalEvents.GOT_LOCAL_MEDIA_STREAM, stream => this.$refs.localPreview.srcObject = stream);
-            vueApp.$on(GlobalEvents.CONNECT_SOCKET, ConnectSocketHandler);
-            vueApp.$on(GlobalEvents.START_CHAT_SESSION, StartChatSessionHandler);
-            vueApp.$on(GlobalEvents.SEND_OFFER_SESSION_DESCRIPTION, SendOfferSessionDescriptionHandler);
-            vueApp.$on(GlobalEvents.SEND_ANSWER_SESSION_DESCRIPTION, SendAnswerSessionDescriptionHandler);
-            vueApp.$on(GlobalEvents.RECEIVED_OFFER_SESSION_DESCRIPTION, ReceivedOfferSessionDescriptionHandler);
-            vueApp.$on(GlobalEvents.RECEIVED_ANSWER_SESSION_DESCRIPTION, ReceivedAnswerSessionDescriptionHandler);
+            appContext.on(GlobalEvents.LIST_CLIENTS, this.listClientsHandler.bind(this));
+            appContext.on(GlobalEvents.START_APP, StartAppHandler);
+            appContext.on(GlobalEvents.GET_LOCAL_MEDIA_STREAM, GetLocalMediaStreamHandler);
+            appContext.on(GlobalEvents.CONNECT_SOCKET, ConnectSocketHandler);
+            appContext.on(GlobalEvents.START_CHAT_SESSION, StartChatSessionHandler);
+            appContext.on(GlobalEvents.SEND_OFFER_SESSION_DESCRIPTION, SendOfferSessionDescriptionHandler);
+            appContext.on(GlobalEvents.SEND_ANSWER_SESSION_DESCRIPTION, SendAnswerSessionDescriptionHandler);
+            appContext.on(GlobalEvents.RECEIVED_OFFER_SESSION_DESCRIPTION, ReceivedOfferSessionDescriptionHandler);
+            appContext.on(GlobalEvents.RECEIVED_ANSWER_SESSION_DESCRIPTION, ReceivedAnswerSessionDescriptionHandler);
+            appContext.on(GlobalEvents.SEND_OFFER_ICE_CANDIDATE, SendOfferICECandidateHandler);
+            appContext.on(GlobalEvents.RECEIVED_OFFER_ICE_CANDIDATE, ReceivedOfferICECandidateHandler);
+            appContext.on(GlobalEvents.SEND_ANSWER_ICE_CANDIDATE, SendAnswerICECandidateHandler);
+            appContext.on(GlobalEvents.RECEIVED_ANSWER_ICE_CANDIDATE, ReceivedAnswerICECandidateHandler);
+            appContext.on(GlobalEvents.GOT_REMOTE_TRACK, this._gotRemoteTrackHandler.bind(this));
+
         },
 
         listClientsHandler(clients) {
@@ -55,32 +69,30 @@ const VueApp = Vue.component("vue-app", {
         },
 
         isMyself(socketid) {
-            let socket = vueApp.getGlobalValue(GlobalKeys.KEY_SOCKET);
-            return socket.id == socketid;
+            return appContext.data(GlobalKeys.KEY_CURRENT_LOCAL_SOCKET_ID) == socketid;
+        },
+
+        _gotRemoteTrackHandler(track) {
+            if (!this._remoteStream) {
+                this._remoteStream = new MediaStream();
+                this.$refs.remotePreview.srcObject = this._remoteStream;
+                appContext.data(GlobalKeys.KEY_REMOTE_STREAM, this._remoteStream);
+            }
+
+            this._remoteStream.addTrack(track);
         },
 
         socketidClickedHandler(e) {
             let targetId = $(e.target).data("socketid");
             if (!this.isMyself(targetId)) {
                 if (confirm(`Don you want to chat with ${targetId}?`)) {
-                    vueApp.$emit(GlobalEvents.START_CHAT_SESSION, targetId);
+                    appContext.fire(GlobalEvents.START_CHAT_SESSION, targetId);
                 }
             } else {
                 alert("You can not chat with yourself.");
             }
         },
 
-        getGlobalValues() {
-            return this._globalValues;
-        },
-
-        getGlobalValue(key) {
-            return this._globalValues.get(key);
-        },
-
-        setGlobalValue(key, value) {
-            this._globalValues.set(key, value);
-        }
     },
 
     watch: {

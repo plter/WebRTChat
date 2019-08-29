@@ -6,7 +6,9 @@
 
 var app = require('../app');
 var debug = require('debug')('webrtchat:server');
-var http = require('http');
+var https = require('https');
+const fs = require("fs");
+const path = require('path');
 
 /**
  * Get port from environment and store in Express.
@@ -19,7 +21,10 @@ app.set('port', port);
  * Create HTTP server.
  */
 
-var server = http.createServer(app);
+var server = https.createServer({
+    key: fs.readFileSync(path.join(__dirname, "..", 'ssl', 'cert.key')),
+    cert: fs.readFileSync(path.join(__dirname, "..", 'ssl', 'cert.pem'))
+}, app);
 require("../source/SocketIO").configWithExpress(server);
 
 /**

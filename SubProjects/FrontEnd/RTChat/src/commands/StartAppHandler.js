@@ -1,8 +1,8 @@
 import GlobalEvents from "../globals/GlobalEvents";
 
-function StartAppHandler() {
-    vueApp.$emit(GlobalEvents.GET_LOCAL_MEDIA_STREAM);
-    vueApp.$emit(GlobalEvents.CONNECT_SOCKET);
+async function StartAppHandler() {
+    await appContext.fire(GlobalEvents.CONNECT_SOCKET);
+    await appContext.fire(GlobalEvents.GET_LOCAL_MEDIA_STREAM);
 }
 
 export default StartAppHandler;
